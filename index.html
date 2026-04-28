@@ -3,62 +3,63 @@
 <script>
 let x=c.getContext("2d"),t=0;
 
-function draw(){
+function d(){
 c.width=innerWidth;c.height=innerHeight;
 
 // خلفية
 x.fillStyle="#0a0a0a";
 x.fillRect(0,0,c.width,c.height);
 
-// ===== RUNWAY RW01 =====
+// ===== RUNWAY =====
 x.fillStyle="#444";
-x.fillRect(100,300,800,30);
+x.fillRect(50,300,900,40);
 
-// خط الوسط
+// خطوط المدرج
 x.strokeStyle="#fff";
-x.setLineDash([20,15]);
+x.setLineDash([30,20]);
 x.beginPath();
-x.moveTo(100,315);
-x.lineTo(900,315);
+x.moveTo(50,320);
+x.lineTo(950,320);
 x.stroke();
-
-// ===== RUNWAY RW10 =====
-x.fillStyle="#333";
-x.fillRect(100,400,800,25);
-
-// ===== TAXIWAYS =====
-x.fillStyle="#666";
-x.fillRect(300,330,20,70);
-x.fillRect(600,330,20,70);
 
 // ===== TERMINAL =====
 x.fillStyle="#0af";
-x.fillRect(350,200,200,80);
+x.fillRect(400,150,200,100);
 
 // ===== GATES =====
-for(let i=0;i<5;i++){
+for(let i=0;i<6;i++){
 x.fillStyle="#0ff";
-x.fillRect(370+i*40,180,20,20);
+x.fillRect(420+i*30,120,20,30);
 }
 
 // ===== CONTROL TOWER =====
 x.fillStyle="#aaa";
-x.fillRect(700,180,20,60);
+x.fillRect(700,150,25,80);
 
-// ===== PLANE (MOVING) =====
+// ===== PLANE (شكل أوضح) =====
+let px=100+t, py=280;
+
 x.fillStyle="#fff";
+
+// جسم الطيارة
+x.fillRect(px,py,40,10);
+
+// جناح
+x.fillRect(px+10,py-10,20,30);
+
+// مقدمة
 x.beginPath();
-x.moveTo(100+t,290);
-x.lineTo(130+t,300);
-x.lineTo(100+t,310);
+x.moveTo(px+40,py);
+x.lineTo(px+55,py+5);
+x.lineTo(px+40,py+10);
 x.closePath();
 x.fill();
 
-t+=3;
-if(t>800)t=0;
+t+=4;
+if(t>900)t=0;
 
-requestAnimationFrame(draw);
+requestAnimationFrame(d);
 }
 
-draw();
+d();
 </script></body></html>
