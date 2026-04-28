@@ -1,23 +1,64 @@
-<!DOCTYPE html><html><body style=margin:0>
+<!DOCTYPE html><html><body style="margin:0">
 <canvas id=c></canvas>
 <script>
 let x=c.getContext("2d"),t=0;
-function d(){
+
+function draw(){
 c.width=innerWidth;c.height=innerHeight;
-x.fillStyle="#000";x.fillRect(0,0,c.width,c.height);
 
-// runway
-x.fillStyle="#444";x.fillRect(50,200,600,20);
+// خلفية
+x.fillStyle="#0a0a0a";
+x.fillRect(0,0,c.width,c.height);
 
-// terminal
-x.fillStyle="#0af";x.fillRect(250,150,120,60);
+// ===== RUNWAY RW01 =====
+x.fillStyle="#444";
+x.fillRect(100,300,800,30);
 
-// plane moving
+// خط الوسط
+x.strokeStyle="#fff";
+x.setLineDash([20,15]);
+x.beginPath();
+x.moveTo(100,315);
+x.lineTo(900,315);
+x.stroke();
+
+// ===== RUNWAY RW10 =====
+x.fillStyle="#333";
+x.fillRect(100,400,800,25);
+
+// ===== TAXIWAYS =====
+x.fillStyle="#666";
+x.fillRect(300,330,20,70);
+x.fillRect(600,330,20,70);
+
+// ===== TERMINAL =====
+x.fillStyle="#0af";
+x.fillRect(350,200,200,80);
+
+// ===== GATES =====
+for(let i=0;i<5;i++){
+x.fillStyle="#0ff";
+x.fillRect(370+i*40,180,20,20);
+}
+
+// ===== CONTROL TOWER =====
+x.fillStyle="#aaa";
+x.fillRect(700,180,20,60);
+
+// ===== PLANE (MOVING) =====
 x.fillStyle="#fff";
-x.fillRect(50+t,180,20,10);
+x.beginPath();
+x.moveTo(100+t,290);
+x.lineTo(130+t,300);
+x.lineTo(100+t,310);
+x.closePath();
+x.fill();
 
-t+=2;if(t>600)t=0;
+t+=3;
+if(t>800)t=0;
 
-requestAnimationFrame(d)}
-d();
+requestAnimationFrame(draw);
+}
+
+draw();
 </script></body></html>
