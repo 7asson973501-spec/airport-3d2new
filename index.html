@@ -1,75 +1,96 @@
-<!DOCTYPE html><html><body style="margin:0">
-<canvas id=c></canvas>
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Airport 3D Pro</title>
+<style>body{margin:0;overflow:hidden;background:#0b0f1a}</style>
+</head><body>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 <script>
-let x=c.getContext("2d");
+const s=new THREE.Scene();s.background=new THREE.Color(0x0b0f1a);
+const c=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,1000);
+c.position.set(0,30,60);
+const r=new THREE.WebGLRenderer({antialias:true});r.setSize(innerWidth,innerHeight);
+document.body.appendChild(r.domElement);
+new THREE.OrbitControls(c,r.domElement);
 
-// طيارات
-let planes=[
- {x:-100,y:280,type:"takeoff"},
- {x:1000,y:380,type:"landing"},
- {x:400,y:120,type:"taxi"},
-];
+// lights
+const d=new THREE.DirectionalLight(0xffffff,1);d.position.set(30,50,30);s.add(d);
+s.add(new THREE.AmbientLight(0xffffff,.5));
 
-// رسم الطيارة
-function drawPlane(p){
- x.fillStyle="#fff";
- x.fillRect(p.x,p.y,30,8);
- x.fillRect(p.x+8,p.y-6,14,20);
+// ground
+const g=new THREE.Mesh(new THREE.PlaneGeometry(300,300),
+ new THREE.MeshStandardMaterial({color:0x1a1f2b}));
+g.rotation.x=-Math.PI/2;s.add(g);
+
+// runways
+function runway(z,name){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(120,0.2,6),
+  new THREE.MeshStandardMaterial({color:0x333333}));
+ m.position.set(0,0.1,z);m.userData={name};s.add(m);return m;
 }
+const RW01=runway(0,"RW01");
+const RW10=runway(-15,"RW10");
 
-// رسم
-function d(){
- c.width=innerWidth;c.height=innerHeight;
+// taxiway
+const taxi=new THREE.Mesh(new THREE.BoxGeometry(6,0.2,30),
+ new THREE.MeshStandardMaterial({color:0x555555}));
+taxi.position.set(20,0.1,-7.5);s.add(taxi);
 
-// خلفية
-x.fillStyle="#0a0a0a";
-x.fillRect(0,0,c.width,c.height);
+// terminal
+const term=new THREE.Mesh(new THREE.BoxGeometry(20,6,10),
+ new THREE.MeshStandardMaterial({color:0x00aaff}));
+term.position.set(25,3,-7.5);s.add(term);
 
-// ===== RUNWAYS =====
-x.fillStyle="#444";
-x.fillRect(50,280,900,40); // RW01
-x.fillRect(50,380,900,30); // RW10
-
-// خطوط
-x.strokeStyle="#fff";
-x.setLineDash([20,15]);
-x.beginPath();
-x.moveTo(50,300);x.lineTo(950,300);
-x.moveTo(50,395);x.lineTo(950,395);
-x.stroke();
-
-// ===== TERMINAL =====
-x.fillStyle="#0af";
-x.fillRect(400,150,200,100);
-
-// ===== GATES =====
+// gates
+const gates=[];
 for(let i=0;i<6;i++){
- x.fillStyle="#0ff";
- x.fillRect(420+i*30,120,20,30);
+ let g=new THREE.Mesh(new THREE.BoxGeometry(2,1,2),
+  new THREE.MeshStandardMaterial({color:0x00ffcc}));
+ g.position.set(30,0.5,-15+i*3);
+ g.userData={name:"Gate B"+(i+1)};
+ s.add(g);gates.push(g);
 }
 
-// ===== TAXIWAY =====
-x.fillStyle="#666";
-x.fillRect(480,250,20,130);
-
-// ===== حركة الطيارات =====
-planes.forEach(p=>{
- if(p.type=="takeoff"){
-   p.x+=3; // إقلاع
-   if(p.x>1000)p.x=-100;
- }
- if(p.type=="landing"){
-   p.x-=2; // هبوط
-   if(p.x<200){p.type="taxi";p.y=260;}
- }
- if(p.type=="taxi"){
-   p.y+=1; // يمشي للتيرمنال
-   if(p.y>320){p.y=320;}
- }
- drawPlane(p);
-});
-
-requestAnimationFrame(d);
+// simple plane
+function plane(){
+ const p=new THREE.Group();
+ const body=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,6,12),
+  new THREE.MeshStandardMaterial({color:0xffffff}));
+ body.rotation.z=Math.PI/2;p.add(body);
+ const wing=new THREE.Mesh(new THREE.BoxGeometry(3,.2,1),
+  new THREE.MeshStandardMaterial({color:0xffffff}));
+ p.add(wing);
+ return p;
 }
-d();
-</script></body></html>
+
+// planes states
+const P1=plane();P1.position.set(-60,2,0);P1.userData={state:"takeoff"};s.add(P1);
+const P2=plane();P2.position.set(60,3,-15);P2.userData={state:"landing"};s.add(P2);
+const P3=plane();P3.position.set(25,1,-5);P3.userData={state:"taxi"};s.add(P3);
+
+// animation
+function step(p){
+ if(p.userData.state==="takeoff"){
+  p.position.x+=0.6;
+  if(p.position.x>60){p.userData.state="landing";p.position.set(60,3,-15);}
+ }
+ if(p.userData.state==="landing"){
+  p.position.x-=0.4;p.position.y-=0.02;
+  if(p.position.x<10){p.userData.state="taxi";p.position.set(20,1,-10);}
+ }
+ if(p.userData.state==="taxi"){
+  p.position.z+=0.1;
+  if(p.position.z>0){p.userData.state="park";p.position.set(30,1,-6);}
+ }
+}
+
+function animate(){
+ requestAnimationFrame(animate);
+ [P1,P2,P3].forEach(step);
+ r.render(s,c);
+}
+animate();
+
+// resize
+onresize=()=>{c.aspect=innerWidth/innerHeight;c.updateProjectionMatrix();r.setSize(innerWidth,innerHeight);}
+</script>
+</body></html>
