@@ -1,76 +1,80 @@
-<!DOCTYPE html><html><body style="margin:0">
+<!DOCTYPE html><html><body style="margin:0;background:#0a1a2f">
 <canvas id="c"></canvas>
+<div id="info" style="position:absolute;top:10px;left:10px;color:white"></div>
+
 <script>
-let c=document.getElementById("c");
-let x=c.getContext("2d");
-
-let planes=[
- {x:900,y:420,state:"landing"},
- {x:100,y:300,state:"takeoff"},
- {x:480,y:260,state:"taxi"},
-];
-
-function drawPlane(p){
- x.fillStyle="#fff";
- x.fillRect(p.x,p.y,30,8);
- x.fillRect(p.x+8,p.y-6,14,20);
+// 🔐 login
+let id=prompt("ID:"),pass=prompt("PASS:");
+if(id!="36144554"||pass!="h36144554"){
+ document.body.innerHTML="<h1 style='color:white;text-align:center'>Denied</h1>";throw"";
 }
 
-function draw(){
- c.width=innerWidth;
- c.height=innerHeight;
+let c=document.getElementById("c"),x=c.getContext("2d"),info=document.getElementById("info");
 
-// خلفية
+// عناصر قابلة للضغط
+let objects=[
+ {name:"RW01",x:100,y:300,w:900,h:60},
+ {name:"RW10",x:100,y:420,w:900,h:40},
+ {name:"Terminal",x:450,y:150,w:300,h:120},
+ {name:"Arrival Hall",x:450,y:550,w:300,h:60}
+];
+
+// طيارات
+let planes=[
+ {x:900,y:420,state:"landing"},
+ {x:100,y:300,state:"takeoff"}
+];
+
+// ضغط
+c.onclick=e=>{
+ let mx=e.clientX,my=e.clientY;
+ objects.forEach(o=>{
+  if(mx>o.x&&mx<o.x+o.w&&my>o.y&&my<o.y+o.h){
+    info.innerText=o.name;
+  }
+ });
+};
+
+function draw(){
+c.width=innerWidth;c.height=innerHeight;
+
+// background
 x.fillStyle="#0a1a2f";
 x.fillRect(0,0,c.width,c.height);
 
-// RW01
-x.fillStyle="#2c3e50";
-x.fillRect(100,300,800,50);
+// runways
+x.fillStyle="#333";x.fillRect(100,300,900,60);
+x.fillStyle="#444";x.fillRect(100,420,900,40);
 
-// RW10
-x.fillStyle="#34495e";
-x.fillRect(100,420,800,30);
+// terminal
+x.fillStyle="#1e90ff";x.fillRect(450,150,300,120);
 
-// تاكسي
-x.fillStyle="#5d6d7e";
-x.fillRect(480,250,20,300);
+// arrival
+x.fillStyle="#888";x.fillRect(450,550,300,60);
 
-// تيرمنال
-x.fillStyle="#3498db";
-x.fillRect(400,150,200,100);
-
-// بوابات
+// gates B
 for(let i=0;i<5;i++){
- x.fillStyle="#5dade2";
- x.fillRect(420+i*35,120,20,30);
+ x.fillStyle="#00bfff";x.fillRect(480+i*50,120,30,40);
 }
 
-// M
+// gates M
 for(let i=0;i<4;i++){
- x.fillStyle="#af7ac5";
- x.fillRect(420+i*35,460,20,30);
+ x.fillStyle="#ff00ff";x.fillRect(480+i*50,480,30,40);
 }
 
-// حركة الطيارات
+// planes
 planes.forEach(p=>{
- if(p.state=="landing"){
-   p.x-=3;
-   if(p.x<500){p.state="taxi";p.y=350;}
- }
- else if(p.state=="taxi"){
-   p.y+=2;
-   if(p.y>460){p.state="park";p.x=420;}
- }
- else if(p.state=="takeoff"){
-   p.x+=4;
-   if(p.x>900)p.x=100;
- }
- drawPlane(p);
+ if(p.state=="landing"){p.x-=3;if(p.x<500){p.state="taxi";p.y=350;}}
+ else if(p.state=="taxi"){p.y+=2;if(p.y>550){p.state="park";}}
+ else if(p.state=="takeoff"){p.x+=4;if(p.x>1000)p.x=100;}
+
+ x.fillStyle="#fff";
+ x.fillRect(p.x,p.y,30,8);
+ x.fillRect(p.x+8,p.y-6,14,20);
 });
 
 requestAnimationFrame(draw);
 }
-
 draw();
-</script></body></html>
+</script>
+</body></html>
