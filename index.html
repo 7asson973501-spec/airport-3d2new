@@ -1,103 +1,154 @@
-<!DOCTYPE html><html><body style="margin:0;background:#0a1a2f">
-<canvas id="c"></canvas>
-<div id="ui" style="position:absolute;top:10px;left:10px;color:white;font-family:sans-serif"></div>
+<!DOCTYPE html>
+<html>
+<body style="margin:0">
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
 <script>
-// 🔐 login
-let id=prompt("ID:"),pass=prompt("PASS:");
-if(id!="36144554"||pass!="h36144554"){
- document.body.innerHTML="<h1 style='color:white;text-align:center'>Denied</h1>";throw"";
-}
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0a1a2f);
 
-let c=document.getElementById("c"),x=c.getContext("2d"),ui=document.getElementById("ui");
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// كاميرا (تحريك)
-let camX=0,camY=0,zoom=1;
+// إضاءة
+scene.add(new THREE.AmbientLight(0xffffff,0.8));
 
-// عناصر
-let objs=[
- {n:"RW01",x:100,y:300,w:900,h:60},
- {n:"RW10",x:100,y:420,w:900,h:40},
- {n:"Terminal",x:450,y:150,w:300,h:120},
- {n:"Arrival",x:450,y:550,w:300,h:60}
-];
+// أرضية
+const ground=new THREE.Mesh(
+ new THREE.PlaneGeometry(500,500),
+ new THREE.MeshBasicMaterial({color:0x1a1a1a})
+);
+ground.rotation.x=-Math.PI/2;
+scene.add(ground);
 
-// طيارات
-let planes=[
- {x:900,y:420,s:"landing",g:"M1"},
- {x:100,y:300,s:"takeoff",g:"B2"},
-];
+// RW01
+const rw01=new THREE.Mesh(
+ new THREE.BoxGeometry(250,1,20),
+ new THREE.MeshBasicMaterial({color:0x333333})
+);
+scene.add(rw01);
 
-// ضغط
-c.onclick=e=>{
- let mx=(e.clientX/zoom)+camX,my=(e.clientY/zoom)+camY;
- objs.forEach(o=>{
-  if(mx>o.x&&mx<o.x+o.w&&my>o.y&&my<o.y+o.h){
-   ui.innerText="Clicked: "+o.n;
-  }
- });
-};
+// RW10
+const rw10=new THREE.Mesh(
+ new THREE.BoxGeometry(250,1,15),
+ new THREE.MeshBasicMaterial({color:0x444444})
+);
+rw10.position.z=-50;
+scene.add(rw10);
 
-// تحريك الكاميرا
-window.onkeydown=e=>{
- if(e.key=="ArrowRight")camX+=50;
- if(e.key=="ArrowLeft")camX-=50;
- if(e.key=="ArrowUp")camY-=50;
- if(e.key=="ArrowDown")camY+=50;
- if(e.key=="+")zoom+=0.1;
- if(e.key=="-")zoom-=0.1;
-};
-
-function draw(){
-c.width=innerWidth;c.height=innerHeight;
-x.setTransform(zoom,0,0,zoom,-camX*zoom,-camY*zoom);
-
-// خلفية
-x.fillStyle="#0a1a2f";x.fillRect(0,0,2000,2000);
-
-// مدارج
-x.fillStyle="#333";x.fillRect(100,300,900,60);
-x.fillStyle="#444";x.fillRect(100,420,900,40);
-
-// تيرمنال
-x.fillStyle="#1e90ff";x.fillRect(450,150,300,120);
+// Terminal
+const terminal=new THREE.Mesh(
+ new THREE.BoxGeometry(80,15,40),
+ new THREE.MeshBasicMaterial({color:0x0077ff})
+);
+terminal.position.set(90,7,-10);
+scene.add(terminal);
 
 // بوابات B
+let gatesB=[];
 for(let i=0;i<5;i++){
- x.fillStyle="#00bfff";
- x.fillRect(480+i*50,120,30,40);
+ let g=new THREE.Mesh(
+  new THREE.BoxGeometry(6,2,6),
+  new THREE.MeshBasicMaterial({color:0x00ffff})
+ );
+ g.position.set(90+i*10,1,-40);
+ scene.add(g);
+ gatesB.push(g);
 }
 
 // بوابات M
+let gatesM=[];
 for(let i=0;i<4;i++){
- x.fillStyle="#ff00ff";
- x.fillRect(480+i*50,480,30,40);
+ let g=new THREE.Mesh(
+  new THREE.BoxGeometry(6,2,6),
+  new THREE.MeshBasicMaterial({color:0xff00ff})
+ );
+ g.position.set(90+i*10,1,20);
+ scene.add(g);
+ gatesM.push(g);
 }
 
-// طيارات
-planes.forEach(p=>{
- if(p.s=="landing"){
-  p.x-=3;
-  if(p.x<500){p.s="taxi";p.y=350;}
- }
- else if(p.s=="taxi"){
-  p.y+=2;
-  if(p.y>500){p.s="park";}
- }
- else if(p.s=="takeoff"){
-  p.x+=4;
-  if(p.x>1000)p.x=100;
- }
-
- x.fillStyle="#fff";
- x.fillRect(p.x,p.y,30,8);
- x.fillRect(p.x+8,p.y-6,14,20);
-
- x.fillStyle="yellow";
- x.fillText(p.g,p.x,p.y-5);
-});
-
-requestAnimationFrame(draw);
+// A1-A4
+for(let i=0;i<4;i++){
+ let a=new THREE.Mesh(
+  new THREE.BoxGeometry(15,1,6),
+  new THREE.MeshBasicMaterial({color:0x666666})
+ );
+ a.position.set(-120+i*30,0.5,-90);
+ scene.add(a);
 }
-draw();
-</script></body></html>
+
+// T1 T2
+let t1=new THREE.Mesh(new THREE.BoxGeometry(6,4,6),new THREE.MeshBasicMaterial({color:0xffff00}));
+t1.position.set(-120,2,0);
+scene.add(t1);
+
+let t2=new THREE.Mesh(new THREE.BoxGeometry(6,4,6),new THREE.MeshBasicMaterial({color:0xffff00}));
+t2.position.set(120,2,0);
+scene.add(t2);
+
+// ===== الطيارات =====
+function createPlane(x,z){
+ let p=new THREE.Mesh(
+  new THREE.BoxGeometry(8,2,2),
+  new THREE.MeshBasicMaterial({color:0xffffff})
+ );
+ p.position.set(x,3,z);
+ p.state="landing";
+ return p;
+}
+
+let planes=[createPlane(150,-50)];
+
+// حركة الطيارات
+function updatePlanes(){
+ planes.forEach(p=>{
+  if(p.state=="landing"){
+    p.position.x-=0.6;
+    if(p.position.x<0){
+      p.state="taxi";
+      p.targetZ=20;
+    }
+  }
+  else if(p.state=="taxi"){
+    p.position.z+=0.3;
+    if(p.position.z>=20){
+      p.state="park";
+    }
+  }
+  else if(p.state=="park"){
+    // توقف شوي ثم تقلع
+    p.wait=(p.wait||0)+1;
+    if(p.wait>200){
+      p.state="takeoff";
+    }
+  }
+  else if(p.state=="takeoff"){
+    p.position.z=0;
+    p.position.x+=0.8;
+    if(p.position.x>150){
+      p.position.set(150,-3,-50);
+      p.state="landing";
+      p.wait=0;
+    }
+  }
+ });
+}
+
+// كاميرا
+camera.position.set(0,180,220);
+camera.lookAt(0,0,0);
+
+// تشغيل
+function animate(){
+ requestAnimationFrame(animate);
+ updatePlanes();
+ renderer.render(scene,camera);
+}
+
+animate();
+</script>
+</body>
+</html>
